@@ -48,12 +48,19 @@ def _signed_image_url(value: Any, field: str, required: bool) -> str:
     allowed_host = os.getenv("SETHOS_INPUT_HOST", "sethosaicreation.fr").lower()
     if parsed.scheme != "https" or (parsed.hostname or "").lower() != allowed_host:
         raise InputError(f"Hôte non autorisé pour {field}.")
-    if parsed.path != "/admin/api/photo-editor-runpod.php" or parsed.username or parsed.password or parsed.fragment:
+    if parsed.username or parsed.password or parsed.fragment:
         raise InputError(f"Chemin non autorisé pour {field}.")
     query = parse_qs(parsed.query, strict_parsing=True)
-    if set(query) != {"action", "id", "slot", "token"} or query.get("action") != ["input"] \
-            or query.get("slot") not in (["source"], ["style"]) \
-            or len(query.get("id", [""])[0]) != 27 or len(query.get("token", [""])[0]) != 64:
+    editor_url = parsed.path == "/admin/api/photo-editor-runpod.php" \
+        and set(query) == {"action", "id", "slot", "token"} \
+        and query.get("action") == ["input"] and query.get("slot") in (["source"], ["style"]) \
+        and re.fullmatch(r"pe_[a-f0-9]{24}", query.get("id", [""])[0]) is not None \
+        and len(query.get("token", [])) == 1 and re.fullmatch(r"[a-f0-9]{64}", query["token"][0]) is not None
+    influencer_url = field == "source_image" and parsed.path == "/admin/api/influencer-studio.php" \
+        and set(query) == {"action", "id", "token"} and query.get("action") == ["input"] \
+        and re.fullmatch(r"inf_[a-f0-9]{24}", query.get("id", [""])[0]) is not None \
+        and len(query.get("token", [])) == 1 and re.fullmatch(r"[a-f0-9]{64}", query["token"][0]) is not None
+    if not editor_url and not influencer_url:
         raise InputError(f"Signature invalide pour {field}.")
     return value
 
