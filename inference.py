@@ -111,7 +111,7 @@ class QwenEngine:
                 pipeline = QwenImageEditPlusPipeline.from_pretrained(
                     source,
                     revision=None if model_dir is not None else MODEL_REVISION,
-                    cache_dir=None if model_dir is not None else str(MODEL_CACHE_ROOT.parent),
+                    cache_dir=None if model_dir is not None else str(MODEL_CACHE_ROOT),
                     torch_dtype=torch.bfloat16,
                     local_files_only=model_dir is not None,
                     low_cpu_mem_usage=True,
