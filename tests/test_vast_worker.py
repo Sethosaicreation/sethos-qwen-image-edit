@@ -2,6 +2,7 @@ import os
 import unittest
 
 os.environ.setdefault("VAST_WORKER_TOKEN", "t" * 64)
+os.environ.setdefault("AI_WORKER_SPOOL", "/tmp/sethos-qwen-vast-test-spool")
 
 from vast_worker import VastJobRequest, photo_request
 
