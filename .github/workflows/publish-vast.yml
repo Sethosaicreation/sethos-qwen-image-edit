@@ -3,6 +3,7 @@ name: Publish Vast Qwen worker
 on:
   workflow_dispatch:
   push:
+    branches: ["feature/vast-direct-worker"]
     tags: ["vast-v*"]
 
 permissions:
