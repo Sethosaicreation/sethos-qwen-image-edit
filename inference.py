@@ -17,14 +17,15 @@ from schema import PhotoEditRequest
 
 MODEL_ID = os.getenv("QWEN_IMAGE_MODEL_ID", "Qwen/Qwen-Image-Edit-2511")
 MODEL_REVISION = os.getenv("QWEN_IMAGE_MODEL_REVISION", "6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9")
-MODEL_CACHE_ROOT = Path("/runpod-volume/huggingface-cache/hub")
+MODEL_CACHE_ROOT = Path(os.getenv("QWEN_IMAGE_CACHE_ROOT", "/runpod-volume/huggingface-cache/hub"))
+ALLOW_MODEL_DOWNLOAD = os.getenv("QWEN_IMAGE_ALLOW_DOWNLOAD", "0").strip().lower() in {"1", "true", "yes", "on"}
 
 
 class InferenceError(RuntimeError):
     pass
 
 
-def resolve_model_dir() -> Path:
+def resolve_model_dir() -> Path | None:
     configured = os.getenv("QWEN_IMAGE_MODEL_DIR", "").strip()
     if configured:
         path = Path(configured)
@@ -43,6 +44,8 @@ def resolve_model_dir() -> Path:
     snapshots = sorted((root / "snapshots").glob("*"), key=lambda path: path.stat().st_mtime, reverse=True) if (root / "snapshots").is_dir() else []
     if snapshots:
         return snapshots[0]
+    if ALLOW_MODEL_DOWNLOAD:
+        return None
     raise InferenceError("Poids Qwen-Image-Edit-2511 introuvables. Ajoutez Qwen/Qwen-Image-Edit-2511 dans le champ Model de l’endpoint RunPod.")
 
 
@@ -103,10 +106,14 @@ class QwenEngine:
 
                 if not torch.cuda.is_available():
                     raise InferenceError("GPU CUDA indisponible sur le worker RunPod.")
+                model_dir = resolve_model_dir()
+                source = str(model_dir) if model_dir is not None else MODEL_ID
                 pipeline = QwenImageEditPlusPipeline.from_pretrained(
-                    str(resolve_model_dir()),
+                    source,
+                    revision=None if model_dir is not None else MODEL_REVISION,
+                    cache_dir=None if model_dir is not None else str(MODEL_CACHE_ROOT.parent),
                     torch_dtype=torch.bfloat16,
-                    local_files_only=True,
+                    local_files_only=model_dir is not None,
                     low_cpu_mem_usage=True,
                 )
                 pipeline.to("cuda")

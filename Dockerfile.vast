@@ -1,0 +1,30 @@
+FROM runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/workspace/huggingface-cache \
+    HF_HUB_OFFLINE=0 \
+    TRANSFORMERS_OFFLINE=0 \
+    QWEN_IMAGE_MODEL_ID=Qwen/Qwen-Image-Edit-2511 \
+    QWEN_IMAGE_MODEL_REVISION=6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9 \
+    QWEN_IMAGE_CACHE_ROOT=/workspace/huggingface-cache/hub \
+    QWEN_IMAGE_ALLOW_DOWNLOAD=1 \
+    AI_WORKER_PORT=8000 \
+    AI_WORKER_SPOOL=/workspace/spool
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git libgl1 libglib2.0-0 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /worker
+COPY requirements-worker.txt requirements-vast.txt /worker/
+RUN python -m pip install -r /worker/requirements-worker.txt -r /worker/requirements-vast.txt
+
+COPY schema.py media.py inference.py vast_worker.py /worker/
+RUN python -m py_compile /worker/schema.py /worker/media.py /worker/inference.py /worker/vast_worker.py \
+    && python -c "from diffusers import QwenImageEditPlusPipeline; assert QwenImageEditPlusPipeline"
+
+EXPOSE 8000
+ENTRYPOINT []
+CMD ["python", "-u", "/worker/vast_worker.py"]

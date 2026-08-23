@@ -15,3 +15,11 @@ Utiliser une carte 80 Gio (A100 ou H100), `workersMin=0`, `workersMax=1`, délai
 `Qwen/Qwen-Image-Edit-2511`
 
 Le worker résout automatiquement le snapshot sous `/runpod-volume/huggingface-cache/hub/` et refuse de télécharger les poids pendant une tâche facturée.
+
+## Image Vast.ai
+
+`Dockerfile.vast` publie le worker HTTPS direct dans `sethosaicreation/sethos-ai-daily`.
+Cette variante conserve le contrat Qwen existant, télécharge le snapshot verrouillé dans le disque
+temporaire Vast et exige `VAST_WORKER_TOKEN`, `VAST_WORKER_TLS_CERT_B64` et
+`VAST_WORKER_TLS_KEY_B64`. Le worker RunPod historique reste inchangé et hors ligne pendant
+les tâches facturées.
