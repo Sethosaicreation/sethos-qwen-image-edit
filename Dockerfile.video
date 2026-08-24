@@ -1,0 +1,37 @@
+FROM runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/workspace/huggingface-cache \
+    HF_HUB_OFFLINE=0 \
+    TRANSFORMERS_OFFLINE=0 \
+    WAN_MODEL_ID=Wan-AI/Wan2.2-TI2V-5B \
+    WAN_MODEL_REVISION=921dbaf3f1674a56f47e83fb80a34bac8a8f203e \
+    WAN_CODE_ROOT=/opt/Wan2.2 \
+    WAN_CODE_REVISION=42bf4cfaa384bc21833865abc2f9e6c0e67233dc \
+    WAN_MODEL_CACHE=/workspace/huggingface-cache \
+    WAN_GENERATION_TIMEOUT_SECONDS=7200 \
+    AI_WORKER_PORT=8000 \
+    AI_WORKER_SPOOL=/workspace/spool-video
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git ffmpeg libgl1 libglib2.0-0 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --filter=blob:none https://github.com/Wan-Video/Wan2.2.git /opt/Wan2.2 \
+    && git -C /opt/Wan2.2 checkout 42bf4cfaa384bc21833865abc2f9e6c0e67233dc \
+    && rm -rf /opt/Wan2.2/.git
+
+WORKDIR /worker
+COPY requirements-video.txt /worker/
+RUN python -m pip install -r /worker/requirements-video.txt
+
+COPY schema.py media.py wan_video_worker.py /worker/
+RUN python -m py_compile /worker/schema.py /worker/media.py /worker/wan_video_worker.py \
+    && python -c "from wan_video_worker import video_parameters; assert callable(video_parameters)" \
+    && python -c "import torch; assert torch.cuda.is_available() or True"
+
+EXPOSE 8000
+ENTRYPOINT []
+CMD ["python", "-u", "/worker/wan_video_worker.py"]
