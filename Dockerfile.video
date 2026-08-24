@@ -23,6 +23,10 @@ RUN git clone --filter=blob:none https://github.com/Wan-Video/Wan2.2.git /opt/Wa
     && git -C /opt/Wan2.2 checkout 42bf4cfaa384bc21833865abc2f9e6c0e67233dc \
     && rm -rf /opt/Wan2.2/.git
 
+# This image serves only TI2V. Avoid importing the unrelated S2V/Animate
+# dependency trees whenever Python imports the upstream `wan` package.
+COPY wan_ti2v_init.py /opt/Wan2.2/wan/__init__.py
+
 WORKDIR /worker
 COPY requirements-video.txt /worker/
 RUN python -m pip install -r /worker/requirements-video.txt
@@ -30,6 +34,7 @@ RUN python -m pip install -r /worker/requirements-video.txt
 COPY schema.py media.py wan_video_worker.py /worker/
 RUN python -m py_compile /worker/schema.py /worker/media.py /worker/wan_video_worker.py \
     && python -c "from wan_video_worker import video_parameters; assert callable(video_parameters)" \
+    && PYTHONPATH=/opt/Wan2.2 python -c "import wan; from wan.modules.attention import FLASH_ATTN_2_AVAILABLE; assert hasattr(wan, 'WanTI2V'); assert FLASH_ATTN_2_AVAILABLE, 'flash-attn 2 is required'" \
     && python -c "import torch; assert torch.cuda.is_available() or True"
 
 EXPOSE 8000

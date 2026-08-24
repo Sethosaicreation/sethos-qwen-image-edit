@@ -13,6 +13,7 @@ accelerate>=1.1.1
 tqdm
 imageio[ffmpeg]
 easydict
+einops>=0.7,<1
 ftfy
 dashscope
 imageio-ffmpeg
