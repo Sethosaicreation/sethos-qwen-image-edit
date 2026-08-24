@@ -11,6 +11,7 @@ on:
       - "schema.py"
       - "media.py"
       - "tests/test_wan_video_worker.py"
+      - "tests/test_schema.py"
       - ".github/workflows/publish-vast-video.yml"
 
 permissions:

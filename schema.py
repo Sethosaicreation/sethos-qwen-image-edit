@@ -57,7 +57,7 @@ def _signed_image_url(value: Any, field: str, required: bool) -> str:
         and re.fullmatch(r"pe_[a-f0-9]{24}", query.get("id", [""])[0]) is not None \
         and len(query.get("token", [])) == 1 and re.fullmatch(r"[a-f0-9]{64}", query["token"][0]) is not None
     influencer_url = field == "source_image" and parsed.path == "/admin/api/influencer-studio.php" \
-        and set(query) == {"action", "id", "token"} and query.get("action") == ["input"] \
+        and set(query) == {"action", "id", "token"} and query.get("action") in (["input"], ["video-input"]) \
         and re.fullmatch(r"inf_[a-f0-9]{24}", query.get("id", [""])[0]) is not None \
         and len(query.get("token", [])) == 1 and re.fullmatch(r"[a-f0-9]{64}", query["token"][0]) is not None
     if not editor_url and not influencer_url:

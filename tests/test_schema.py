@@ -31,6 +31,14 @@ class SchemaTests(unittest.TestCase):
         )
         self.assertIn("influencer-studio.php", parse_request(event).source_image_url)
 
+    def test_accepts_signed_generated_photo_as_video_frame_zero(self):
+        event = self.valid_event()
+        event["input"]["source_image"] = (
+            "https://sethosaicreation.fr/admin/api/influencer-studio.php"
+            "?action=video-input&id=inf_0123456789abcdef01234567&token=" + "d" * 64
+        )
+        self.assertIn("action=video-input", parse_request(event).source_image_url)
+
     def test_rejects_influencer_url_as_style_reference(self):
         event = self.valid_event()
         event["input"]["style_image"] = (

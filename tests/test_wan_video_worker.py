@@ -16,7 +16,7 @@ class WanVideoWorkerContractTests(unittest.TestCase):
         data = {
             "reference_image_url": (
                 "https://sethosaicreation.fr/admin/api/influencer-studio.php"
-                "?action=input&id=inf_0123456789abcdef01234567&token=" + "a" * 64
+                "?action=video-input&id=inf_0123456789abcdef01234567&token=" + "a" * 64
             ),
             "prompt": "She turns naturally toward the fixed camera.",
             "negative_prompt": "face drift, unstable anatomy",
