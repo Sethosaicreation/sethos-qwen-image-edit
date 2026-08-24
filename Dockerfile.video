@@ -34,7 +34,7 @@ RUN python -m pip install -r /worker/requirements-video.txt
 COPY schema.py media.py wan_video_worker.py /worker/
 RUN python -m py_compile /worker/schema.py /worker/media.py /worker/wan_video_worker.py \
     && python -c "from wan_video_worker import video_parameters; assert callable(video_parameters)" \
-    && PYTHONPATH=/opt/Wan2.2 python -c "import wan; from wan.modules.attention import FLASH_ATTN_2_AVAILABLE; assert hasattr(wan, 'WanTI2V'); assert FLASH_ATTN_2_AVAILABLE, 'flash-attn 2 is required'" \
+    && PYTHONPATH=/opt/Wan2.2 python -c "import torch; torch.cuda.current_device = lambda: 0; import wan; from wan.modules.attention import FLASH_ATTN_2_AVAILABLE; assert hasattr(wan, 'WanTI2V'); assert FLASH_ATTN_2_AVAILABLE, 'flash-attn 2 is required'" \
     && python -c "import torch; assert torch.cuda.is_available() or True"
 
 EXPOSE 8000
