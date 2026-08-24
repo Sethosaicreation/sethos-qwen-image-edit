@@ -17,4 +17,5 @@ einops>=0.7,<1
 ftfy
 dashscope
 imageio-ffmpeg
+flash-attn @ https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3%2Bcu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl#sha256=f25da18657a87fc83dc1bfb8b7751b82246e9db355510226b674fd437c34b5fb
 numpy>=1.23.5,<2
