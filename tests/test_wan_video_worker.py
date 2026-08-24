@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 os.environ.setdefault("VAST_WORKER_TOKEN", "t" * 64)
 os.environ.setdefault("AI_WORKER_SPOOL", "/tmp/sethos-wan22-test-spool")
+os.environ.setdefault("WAN_MODEL_CACHE", "/tmp/sethos-wan22-test-model-cache")
 
 from wan_video_worker import VastVideoJobRequest, effective_prompt, probe_video, video_parameters
 
