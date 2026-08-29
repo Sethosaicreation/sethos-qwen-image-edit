@@ -55,13 +55,18 @@ def directed_prompt(request: PhotoEditRequest) -> str:
         "free": "Apply the requested image edit precisely.",
     }[request.edit_mode]
     fidelity = {
-        "identity": "Preserve exactly the same adult person's facial identity, body proportions, pose, camera angle, expression, and every area not explicitly requested to change.",
+        "identity": "Preserve exactly the same adult person's facial identity and body proportions. Pose, camera angle, expression, crop, clothing, and environment may change only where the user instruction explicitly requests them; preserve every other area.",
         "balanced": "Preserve the person's identity, pose, and main composition while applying the requested edit naturally.",
         "creative": "Preserve recognizable subject identity while allowing composition changes required by the edit.",
     }[request.fidelity]
     references = "Use Figure 1 as the source photo."
     if request.style_image_url:
-        references += " Use Figure 2 only as the requested clothing, material, style, or environment reference. Never copy Figure 2's identity."
+        references += (
+            " Use Figure 2 only for the requested clothing, material, style, or environment attributes."
+            " Never copy Figure 2's identity, person, pose, or body. Figure 2 is a reference board,"
+            " not a composition template: never inherit its camera position, crop, viewpoint, or"
+            " foreground arrangement unless the user explicitly requests that exact composition."
+        )
     ratio = "" if request.aspect_ratio == "source" else f" Compose the result in {request.aspect_ratio} aspect ratio."
     return f"{references} {mode} User instruction: {request.prompt} {fidelity}{ratio}".strip()
 
